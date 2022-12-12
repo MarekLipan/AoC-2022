@@ -25,6 +25,7 @@ end = (end[0][0], end[1][0])
 array[start] = "a"
 array[end] = "z"
 
+
 # write the graph
 graph = Graph()
 
@@ -44,3 +45,20 @@ for i in range(array.shape[0]):
 
 best_path = find_path(graph, start, end)
 print(best_path.total_cost)
+
+### TASK 2
+# multiple starts
+a_positions = np.where(array== "a")
+starts = []
+for i in range(a_positions[0].shape[0]):
+    starts.append((a_positions[0][i], a_positions[1][i]))
+
+# all posible candidate paths
+candidate_best_paths = []
+for s in starts:
+    try:
+        candidate_best_paths.append(find_path(graph, s, end).total_cost)
+    except:
+        print(f"Not posible path from start: {s}")
+
+print(np.min(candidate_best_paths))
