@@ -18,17 +18,21 @@ for i in input:
 paths = np.array(paths)
 
 # initialize the field
-x_min = np.min([np.min(paths[:, 0]), np.min(paths[:, 2])])
-x_max = np.max([np.max(paths[:, 0]), np.max(paths[:, 2])])
+x_min = 0
+x_max = 1000
+
+#x_min = np.min([np.min(paths[:, 0]), np.min(paths[:, 2])])
+#x_max = np.max([np.max(paths[:, 0]), np.max(paths[:, 2])])
 y_min = 0
 y_max = np.max([np.max(paths[:, 1]), np.max(paths[:, 3])])
 
 field = np.full(
-    (y_max + 1, x_max - x_min + 1),
+    (y_max + 3, x_max - x_min + 1),
      "."
      )
 
-
+# add floor for task 2
+paths = np.vstack([paths, [x_min, y_max + 2, x_max, y_max + 2]])
 
 # standardization
 paths[:, 0] = paths[:, 0] - x_min
@@ -42,7 +46,6 @@ y2 = np.max([paths[:, 1], paths[:, 3]], axis=0)
 paths = np.stack([x1, y1, x2, y2], axis=1)
 
 
-
 # insert rock paths
 for i in range(paths.shape[0]):
     field[paths[i, 1]:paths[i, 3]+1, paths[i, 0]:paths[i, 2]+1] = "#"
@@ -51,31 +54,21 @@ for i in range(paths.shape[0]):
 # fallin of the sand simulation
 sand_placed = 0
 no_fall = True
+sp = [0, 500-x_min]
 
-while no_fall:
+print(field[tuple(sp)])
+
+while field[tuple([0, 500-x_min])] == ".":
 
     single_fall_in_progress = True
     sp = [0, 500-x_min]
 
-
     while single_fall_in_progress:
-        if sp[0]+1 >= field.shape[0]:
-            # fell off
-            single_fall_in_progress = False
-            no_fall = False
-        elif field[sp[0]+1, sp[1]] == ".":
+        if field[sp[0]+1, sp[1]] == ".":
             sp[0] += 1
-        elif sp[1]-1 < 0:
-            # fell off
-            single_fall_in_progress = False
-            no_fall = False
         elif field[sp[0]+1, sp[1]-1] == ".":
             sp[0] += 1
             sp[1] -= 1
-        elif sp[1]+1 >= field.shape[1]:
-            # fell off
-            single_fall_in_progress = False
-            no_fall = False
         elif field[sp[0]+1, sp[1]+1] == ".":
             sp[0] += 1
             sp[1] += 1
@@ -83,13 +76,18 @@ while no_fall:
         else: 
             single_fall_in_progress = False
 
-    if no_fall:
-        field[tuple(sp)] = "o"
-        sand_placed += 1
+    field[tuple(sp)] = "o"
+    sand_placed += 1
 
 
-print(f"Result task 1: {sand_placed}")
+print(f"Result task 2: {sand_placed}")
 
 outpufile = open('Day-14/output.txt',"w")
-outpufile.writelines(np.array2string(field))
+output = []
+for i in range(field.shape[0]):
+    for j in range(field.shape[1]):
+        output.append(field[i, j])
+    output.append("\n")
+
+outpufile.writelines(output)
 outpufile.close()
