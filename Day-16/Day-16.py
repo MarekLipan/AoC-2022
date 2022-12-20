@@ -2,7 +2,7 @@ import numpy as np
 import re
 
 # read the input into a list
-file = open('Day-16/sample_input.txt', 'r')
+file = open('Day-16/input.txt', 'r')
 L = file.read().splitlines()
 
 valves = {}

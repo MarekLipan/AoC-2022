@@ -4,7 +4,7 @@ from dijkstar import Graph, find_path
 import itertools
 
 # read the input into a list
-file = open('Day-16/input.txt', 'r')
+file = open('Day-16/sample_input.txt', 'r')
 L = file.read().splitlines()
 
 valves = {}
@@ -56,12 +56,12 @@ def potential_max_gain(minute, valves):
     """
     Computes what is the maximum possible gain if all the remaining nonzero valves were to be opened in the upcoming minutes
     """
-    
+
     remaining_flows = []
     for v in valves:
         if valves[v]["open"] == False and valves[v]["flow"] > 0:
             remaining_flows.append(valves[v]["flow"])
-        
+
     remaining_flows.sort(reverse=True)
     result = 0
     for f in remaining_flows:
@@ -99,7 +99,7 @@ def check_optimal_path(debug_path):
         optimal_path = optimal_paths[(src, dst)] == path_for_check
     else:
         optimal_path = True
-    
+
     return optimal_path
 
 
@@ -139,6 +139,12 @@ def make_action(minute, current_release, current_vault, valves, debug_path, my_t
     #  or not(optimal_path) or not(e_optimal_path)
     if (minute == 26) or repeated_visit or e_repeated_visit or (potential_release <= max_release):
         if current_release > max_release:
+
+            # for debug
+            if current_release==1707:
+                print(debug_path)
+                print(e_debug_path)
+
             max_release = current_release
             print(current_release)
 
@@ -209,11 +215,3 @@ def make_action(minute, current_release, current_vault, valves, debug_path, my_t
 
 make_action(minute, current_release, current_vault, valves, debug_path, my_turn, e_current_vault, e_debug_path)
 print(f"Results task 1: {max_release}")
-
-
-
-    
-
-    
-
-    
