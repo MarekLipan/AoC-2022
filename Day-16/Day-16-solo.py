@@ -4,9 +4,10 @@ from dijkstar import Graph, find_path
 import itertools
 import time
 import tqdm
+from multiprocessing import Pool
 
 # read the input into a list
-file = open('Day-16/sample_input.txt', 'r')
+file = open('Day-16/input.txt', 'r')
 L = file.read().splitlines()
 
 valves = {}
@@ -23,17 +24,14 @@ for l in L:
     valves[input[0]] = {"flow": int(input[1]), "open": False, "tunnels": input[2:]}
 
 
-num_valves = len(valves)
-
-
-def potential_max_gain(minute, valves, unopened_non_zero_flow_vaults):
+def potential_max_gain(minute, valves, vaults_yet_to_be_opened):
     """
     Computes what is the maximum possible gain if all the remaining nonzero valves were to be opened in the upcoming minutes
     """
     
     remaining_flows = []
     for v in valves:
-        if v in unopened_non_zero_flow_vaults and valves[v]["flow"] > 0:
+        if v in vaults_yet_to_be_opened and valves[v]["flow"] > 0:
             remaining_flows.append(valves[v]["flow"])
         
     remaining_flows.sort(reverse=True)
@@ -74,23 +72,15 @@ def make_action(minute, target_vaults, current_release, path, current_dst_valve,
 
     global max_release
 
-    # find out if there is even potential to reach better solution than so far
-    #potential_release = current_release
-    #for v in unopened_non_zero_flow_vaults:
-    #    potential_release += (26 - minute) * valves[v]["flow"]
-
-    # or (potential_release <= max_release)
-
-    # find out if there is even potential to reach better solution than so far
-    #potential_release = potential_max_gain(minute, valves, unopened_non_zero_flow_vaults) + current_release
-    # or (potential_release <= max_release)
-
     vaults_yet_to_be_opened = []
     for v in target_vaults:
         if not(valves[v]["open"]):
             vaults_yet_to_be_opened.append(v)
 
-    if minute == 26 or len(vaults_yet_to_be_opened)==0:
+    # find out if there is even potential to reach better solution than so far
+    potential_release = potential_max_gain(minute, valves, vaults_yet_to_be_opened) + current_release
+
+    if minute == 26 or len(vaults_yet_to_be_opened)==0 or (potential_release <= max_release):
         if current_release > max_release:
             max_release = current_release
         return
@@ -129,19 +119,10 @@ def make_action(minute, target_vaults, current_release, path, current_dst_valve,
         minute -= 1
         path = prev_path
 
-all_combinations = []
-for n in range(int(len(non_zero_flow_vaults)/2)+1):
-    for comb in itertools.combinations(non_zero_flow_vaults, n):
-        my_list = list(comb)
-        e_list = [i for i in non_zero_flow_vaults if i not in my_list]
-        all_combinations.append((my_list, e_list))
 
-total_max_release = 0
+def elephant_search(my_list, e_list):
 
-#tqdm.tqdm()
-
-for i in all_combinations:
-    my_list, e_list = i
+    global max_release
 
     # my turn
     minute = 0
@@ -167,11 +148,23 @@ for i in all_combinations:
 
     e_max_release = max_release
 
-    total_max_release  = max(total_max_release, (my_max_release + e_max_release))
+    return (my_max_release + e_max_release)
 
-print(f"Results task 2: {total_max_release}")
-
-
+# entry point for the program
+if __name__ == '__main__':
+    with Pool() as pool:
+        all_combinations = []
+        for n in range(int(len(non_zero_flow_vaults)/2)+1):
+            for comb in itertools.combinations(non_zero_flow_vaults, n):
+                my_list = list(comb)
+                e_list = [i for i in non_zero_flow_vaults if i not in my_list]
+                all_combinations.append((my_list, e_list))
+        # call the same function with different data in parallel
+        total_max_release = 0
+        for result in tqdm.tqdm(pool.starmap(elephant_search, all_combinations)):
+            if result > total_max_release:
+                total_max_release = result
+                print(total_max_release)
 
     
 
