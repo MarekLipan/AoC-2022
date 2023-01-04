@@ -19,8 +19,24 @@ def full_containment(l: list) -> int:
 
     return result
 
-print(full_containment(L))
 
+def overlap(l: list) -> int:
+    """
+    In how many pairs of elves are sections overlapped
+    """
+
+    result = 0
+
+    for i in l:
+        a, b, c, d = [int(n) for n in re.findall(r'\d+', i)]
+
+        if ((c <= b) and (d >= b)) or ((c <= a) and (d >= a)) or ((c >= a) and (d <= b)):
+            print(i)
+            result += 1
+
+    return result
+
+print(overlap(L))
 
 
 
